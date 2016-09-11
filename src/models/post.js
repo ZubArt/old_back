@@ -7,6 +7,10 @@ let schema = new Schema({
         requited: true
     },
     description: String,
+    created: {
+        type: Date,
+        default: Date.now
+    },
     images: {
         preview: {
             // base64
@@ -22,7 +26,8 @@ let schema = new Schema({
         src: String,
         dev: String,
         out: String
-    }
+    },
+    tags: []
 });
 
 const Post = mongoose.model('Post', schema);

@@ -3,12 +3,17 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import httpLogger from 'morgan'
 import {logger} from './core'
+import sendError from './helpers/middleware/sendError'
 
 import routers from './routers'
 
 const hosts = ['::', '127.0.0.1'];
 
 class Application {
+    /**
+     * @param name
+     * @param config
+     */
     constructor(name, config) {
         this.config = config;
 
@@ -17,22 +22,29 @@ class Application {
         const app = this.app = express();
 
         app.use(httpLogger('dev'))
+            .use(sendError)
             .use(bodyParser.urlencoded({
                 extended: true
             }))
             .use(bodyParser.json())
             .use(express.static(path.join(__dirname, 'public')))
-            .use((err, req, res, next) => {
-                res.json({
-                    code: err.status,
-                    message: err.message
-                })
-            })
         ;
 
         app.set("logger", this.logger);
         routers(app);
+
+        // must initialize after routers
+        app.use(function(err, req, res, next) {
+            const logger = res.logger || this.logger;
+            logger.error(err);
+            res.sendError(err)
+        })
     }
+
+    /**
+     * @param port
+     * @return {*|http.Server}
+     */
     run(port) {
 
         port = port || this.config.get('port') || process.env.PORT || 3000;
