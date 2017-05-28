@@ -18,7 +18,6 @@ let schema = new Schema({
         },
         main: {
             // base64
-            // TODO think about gif
             type: String
         }
     },
