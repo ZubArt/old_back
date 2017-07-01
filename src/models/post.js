@@ -7,7 +7,12 @@ let schema = new Schema({
         requited: true
     },
     description: String,
+    descHtml: String,
     created: {
+        type: Date,
+        default: Date.now
+    },
+    dateOfProject: {
         type: Date,
         default: Date.now
     },
@@ -16,15 +21,18 @@ let schema = new Schema({
             // base64
             type: String
         },
-        main: {
+        full: {
             // base64
+            type: String
+        },
+        video: {
             type: String
         }
     },
     urls: {
         src: String,
         dev: String,
-        out: String
+        prod: String
     },
     tags: []
 });

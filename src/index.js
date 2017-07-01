@@ -4,6 +4,7 @@ import bodyParser from 'body-parser'
 import httpLogger from 'morgan'
 import {logger} from './core'
 import sendError from './helpers/middleware/sendError'
+import cors from 'cors'
 
 import routers from './routers'
 
@@ -23,15 +24,11 @@ class Application {
 
         app.use(httpLogger('dev'))
             .use(sendError)
-            .use((req, res, next) => {
-                res.header("Access-Control-Allow-Origin", "*");
-                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                next()
-            })
+            .use(cors())
             .use(bodyParser.urlencoded({
                 extended: true
             }))
-            .use(bodyParser.json())
+            .use(bodyParser.json({limit: '50mb'}))
             .use(express.static(path.join(__dirname, 'public')))
         ;
 
@@ -39,8 +36,8 @@ class Application {
         routers(app);
 
         // must initialize after routers
-        app.use(function(err, req, res, next) {
-            const logger = res.logger || this.logger;
+        app.use((err, req, res, next) => {
+            const logger = req.logger || this.logger;
             logger.error(err);
             res.sendError(err)
         })

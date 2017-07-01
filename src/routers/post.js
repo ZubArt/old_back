@@ -9,7 +9,7 @@ export default parentLogger => {
     function update(req, res, next) {
         let id = req.params.id;
 
-        logger.log("update or add new post");
+        logger.log(`update ${id} or add new post`);
         Post.findById(id)
             .exec()
             .then(item => {
@@ -26,6 +26,25 @@ export default parentLogger => {
             .catch(next)
     }
 
+    function deleteItem(req, res, next) {
+        logger.log('delete post(s)');
+        let promise = req.params.id
+            ? Post.findByIdAndRemove(req.params.id)
+            : req.body.ids
+                ? Post.remove({_id: {$in: req.body.ids.map(ObjectId)}})
+                : null
+        ;
+
+        if (!promise) {
+            throw Error("Not found id or ids values!");
+        }
+
+        promise.then(() => res.json({
+            code: 0,
+            message: "done"
+        })).catch(next)
+    }
+
     router.use((req, res, next) => {
             res.logger = logger;
             next()
@@ -40,26 +59,21 @@ export default parentLogger => {
                 })
                 .catch(next)
         })
+        .get('/tags', (req, res, next) => {
+            logger.log('select all tags');
+
+            Post.distinct("tags")
+                .exec()
+                .then(data => {
+                    console.log(data);
+                    res.json(data)
+                })
+                .catch(next)
+        })
         .post('/', update)
         .put('/:id', update)
-        .delete(['/', '/:id'], (req, res, next) => {
-            logger.log('delete post(s)');
-            let promise = req.params.id
-                ? Post.findByIdAndRemove(req.params.id)
-                : req.body.ids
-                ? Post.remove({_id: {$in: req.body.ids.map(ObjectId)}})
-                : null
-            ;
-
-            if (!promise) {
-                throw Error("Not found id or ids values!");
-            }
-
-            promise.then(() => res.json({
-                code: 0,
-                message: "done"
-            })).catch(next)
-        });
+        .post('/delete', deleteItem)
+        .delete('/:id', deleteItem);
 
     return router
 }
