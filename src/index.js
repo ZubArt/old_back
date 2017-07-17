@@ -28,7 +28,7 @@ class Application {
             .use(bodyParser.urlencoded({
                 extended: true
             }))
-            .use(bodyParser.json({limit: '50mb'}))
+            .use(bodyParser.json({limit: '100mb'}))
             .use(express.static(path.join(__dirname, 'public')))
         ;
 
